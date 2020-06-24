@@ -13,21 +13,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@master
 
-    - name: Set environment variables
+    - name: Set variables
+      id: variables
       run: |
-        tag_name="${{ github.event.release.tag_name }}"
-        echo "::set-env name=DOCKER_VERSION_TAG::itchyny/golang-simple-server-sample:${tag_name#v}"
-        echo "::set-env name=DOCKER_LATEST_TAG::itchyny/golang-simple-server-sample:latest"
+        git_tag_name="${{ github.event.release.tag_name }}"
+        git_tag_name="${git_tag_name#v}"
+        echo "::set-output name=release_tag::$git_tag_name"
+        echo "::set-output name=release_tag_minor::${git_tag_name%.*}"
 
-    - name: Build image
-      run: |
-        docker build -t "${DOCKER_VERSION_TAG}" .
-        docker tag "${DOCKER_VERSION_TAG}" "${DOCKER_LATEST_TAG}"
-
-    - name: Login to Registries
-      run: docker login -u itchyny --password-stdin <<< "${{ secrets.DOCKER_HUB_TOKEN }}"
-
-    - name: Push to Docker Hub
-      run: |
-        docker push "${DOCKER_VERSION_TAG}"
-        docker push "${DOCKER_LATEST_TAG}"
+    - name: Build and Release
+      uses: docker/build-push-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        repository: itchyny/golang-simple-server-sample
+        tags: latest, ${{ steps.variables.outputs.release_tag }}, ${{ steps.variables.outputs.release_tag_minor }}
