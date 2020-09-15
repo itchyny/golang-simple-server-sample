@@ -14,6 +14,7 @@ func main() {
 		fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
 	})
 	http.HandleFunc("/api/stats", stats_api.Handler)
+	log.Printf("Start server listening at :8080 ...\n")
 	log.Fatal(http.ListenAndServe(":8080", logRequest(http.DefaultServeMux)))
 }
 
