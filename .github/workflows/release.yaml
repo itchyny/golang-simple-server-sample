@@ -37,7 +37,14 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and Release to Docker Hub
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GHCR_TOKEN }}
+
+    - name: Build and Release to DockerHub and GitHub Container Registry
       uses: docker/build-push-action@v2
       with:
         push: true
@@ -46,27 +53,6 @@ jobs:
           ${{ github.repository }}:${{ steps.variables.outputs.release_tag_patch }}
           ${{ github.repository }}:${{ steps.variables.outputs.release_tag_minor }}
           ${{ github.repository }}:${{ steps.variables.outputs.release_tag_major }}
-        labels: |
-          org.opencontainers.image.title=${{ steps.variables.outputs.repository_name }}
-          org.opencontainers.image.url=${{ steps.variables.outputs.repository_url }}
-          org.opencontainers.image.source=${{ steps.variables.outputs.repository_url }}
-          org.opencontainers.image.version=${{ github.event.release.tag_name }}
-          org.opencontainers.image.created=${{ steps.variables.outputs.created }}
-          org.opencontainers.image.revision=${{ github.sha }}
-          org.opencontainers.image.licenses=${{ github.event.repository.license.name }}
-
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GHCR_TOKEN }}
-
-    - name: Build and Release to GitHub Container Registry
-      uses: docker/build-push-action@v2
-      with:
-        push: true
-        tags: |
           ghcr.io/${{ github.repository }}:latest
           ghcr.io/${{ github.repository }}:${{ steps.variables.outputs.release_tag_patch }}
           ghcr.io/${{ github.repository }}:${{ steps.variables.outputs.release_tag_minor }}
