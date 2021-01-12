@@ -6,9 +6,9 @@ all: build
 
 .PHONY: build
 build:
-	go build -o build/$(BIN) .
+	go build -o $(BIN) .
 
 .PHONY: clean
 clean:
-	rm -rf build
+	rm -rf $(BIN)
 	go clean
