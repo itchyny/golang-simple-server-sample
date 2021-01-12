@@ -1,1 +1,4 @@
 /golang-simple-server-sample
+*.exe
+*.test
+*.out
