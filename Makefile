@@ -6,7 +6,7 @@ all: build
 
 .PHONY: build
 build:
-	go build -o $(BIN) .
+	go build -ldflags="-s -w" -o $(BIN) .
 
 .PHONY: clean
 clean:
