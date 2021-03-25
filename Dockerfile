@@ -4,7 +4,7 @@ WORKDIR /app
 COPY . .
 RUN make build
 
-FROM alpine:3.12
+FROM alpine:3.13
 RUN apk add --no-cache ca-certificates
 COPY --from=builder /app/golang-simple-server-sample /
 ENTRYPOINT ["/golang-simple-server-sample"]
