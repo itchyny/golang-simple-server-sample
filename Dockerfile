@@ -8,4 +8,5 @@ RUN make build
 FROM gcr.io/distroless/static:nonroot
 
 COPY --from=builder /app/golang-simple-server-sample /
+EXPOSE 8080
 ENTRYPOINT ["/golang-simple-server-sample"]
