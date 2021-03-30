@@ -1,10 +1,11 @@
-FROM golang:1.16-alpine AS builder
-RUN apk add --no-cache make git
+FROM golang:1.16 AS builder
+
 WORKDIR /app
 COPY . .
+ENV CGO_ENABLED 0
 RUN make build
 
-FROM alpine:3.13
-RUN apk add --no-cache ca-certificates
+FROM gcr.io/distroless/static:nonroot
+
 COPY --from=builder /app/golang-simple-server-sample /
 ENTRYPOINT ["/golang-simple-server-sample"]
