@@ -7,6 +7,7 @@ on:
 jobs:
 
   release:
+    name: Release
     runs-on: ubuntu-latest
     steps:
 
@@ -44,7 +45,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and release to Docker Hub and GitHub Container Registry
+    - name: Build and release Docker image
       uses: docker/build-push-action@v2
       with:
         context: .
