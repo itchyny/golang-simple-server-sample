@@ -22,12 +22,17 @@ jobs:
         echo "::set-output name=release_tag_minor::${git_tag_name%.*}"
         echo "::set-output name=release_tag_major::${git_tag_name%%.*}"
 
-    -
-      name: Docker metadata
+    - name: Docker metadata
       uses: docker/metadata-action@v3
       id: metadata
       with:
-        images: ${{ github.repository }}
+        images: |
+          ${{ github.repository }}
+          ghcr.io/${{ github.repository }}
+        tags: |
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=semver,pattern={{major}}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v1
@@ -54,13 +59,5 @@ jobs:
         context: .
         push: true
         platforms: linux/amd64, linux/arm64
-        tags: |
-          ${{ github.repository }}:latest
-          ${{ github.repository }}:${{ steps.variables.outputs.release_tag_patch }}
-          ${{ github.repository }}:${{ steps.variables.outputs.release_tag_minor }}
-          ${{ github.repository }}:${{ steps.variables.outputs.release_tag_major }}
-          ghcr.io/${{ github.repository }}:latest
-          ghcr.io/${{ github.repository }}:${{ steps.variables.outputs.release_tag_patch }}
-          ghcr.io/${{ github.repository }}:${{ steps.variables.outputs.release_tag_minor }}
-          ghcr.io/${{ github.repository }}:${{ steps.variables.outputs.release_tag_major }}
+        tags: ${{ steps.metadata.outputs.tags }}
         labels: ${{ steps.metadata.outputs.labels }}
