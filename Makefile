@@ -9,5 +9,4 @@ build:
 
 .PHONY: clean
 clean:
-	rm -rf $(BIN)
 	go clean
