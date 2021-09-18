@@ -1,5 +1,4 @@
 BIN := golang-simple-server-sample
-export GO111MODULE=on
 
 .PHONY: all
 all: build
