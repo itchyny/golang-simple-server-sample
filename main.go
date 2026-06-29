@@ -10,11 +10,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 
 	stats_api "github.com/fukata/golang-stats-api-handler"
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -31,7 +31,8 @@ func main() {
 	}
 
 	if err := graceful(context.Background(), server); err != nil {
-		slog.Error("failed to run the server", "error", err)
+		slog.Error("server error", "error", err)
+		os.Exit(1)
 	}
 }
 
@@ -44,24 +45,29 @@ func graceful(ctx context.Context, server *http.Server) error {
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	var wg sync.WaitGroup
-	wg.Go(func() {
+	eg, ctx := errgroup.WithContext(ctx)
+	eg.Go(func() error {
+		slog.Info("starting the server", "address", listener.Addr().String())
+		if err := server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("failed to serve: %w", err)
+		}
+		return nil
+	})
+
+	eg.Go(func() error {
 		<-ctx.Done()
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-
 		slog.Info("shutting down the server")
 		if err := server.Shutdown(ctx); err != nil {
-			slog.Error("failed to shutdown the server", "error", err)
+			return fmt.Errorf("failed to shutdown the server: %w", err)
 		}
+		return nil
 	})
 
-	slog.Info("starting the server", "addr", listener.Addr())
-	if err := server.Serve(listener); !errors.Is(err, http.ErrServerClosed) {
-		return fmt.Errorf("failed to serve: %w", err)
+	if err := eg.Wait(); err != nil {
+		return err
 	}
-
-	wg.Wait()
 	slog.Info("server shutdown completed")
 	return nil
 }

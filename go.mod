@@ -2,4 +2,7 @@ module github.com/itchyny/golang-simple-server-sample
 
 go 1.26
 
-require github.com/fukata/golang-stats-api-handler v1.0.0
+require (
+	github.com/fukata/golang-stats-api-handler v1.0.0
+	golang.org/x/sync v0.21.0
+)
